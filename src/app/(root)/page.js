@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -8,6 +9,7 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import { useCollection } from "../../hooks/useFirestore";
 
 export default function Home() {
   const {
@@ -70,7 +72,44 @@ export default function Home() {
   // Determine error to display
   const displayError = localError || authError;
 
-  if (authLoading) {
+  // Redirect signed-in users to latest radar or create
+  const constraints = useMemo(
+    () =>
+      user
+        ? [
+            {
+              type: "where",
+              field: "ownerId",
+              operator: "==",
+              value: user.uid,
+            },
+            { type: "orderBy", field: "updatedAt", direction: "desc" },
+            { type: "limit", value: 1 },
+          ]
+        : [],
+    [user?.uid]
+  );
+  const { data: newestRadars, loading: newestLoading } = useCollection(
+    "radars",
+    constraints,
+    false,
+    !!user && !authLoading
+  );
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (!newestLoading) {
+        const newest = newestRadars && newestRadars[0];
+        if (newest && newest.id) {
+          router.replace(`/radar/${newest.id}`);
+        } else {
+          router.replace("/radar/create");
+        }
+      }
+    }
+  }, [authLoading, newestLoading, newestRadars, router, user]);
+
+  if (authLoading || (user && newestLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-blue"></div>
@@ -183,26 +222,16 @@ export default function Home() {
                   </>
                 )}
               </button>
+              <Link
+                href="/company-overview"
+                className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm rounded-lg border border-stone-700/70 bg-stone-900/30 text-stone-200 hover:bg-stone-900/50 transition-colors"
+              >
+                Company overview
+              </Link>
             </div>
           </div>
         ) : (
-          <div className="card-sleek card-hover mb-6">
-            <h2 className="text-xl font-semibold text-stone-200 mb-3 text-center">
-              Welcome back!
-            </h2>
-            <p className="text-stone-200 mb-4 text-center text-sm">
-              Continue managing your radars and explore new insights.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="btn-gradient w-full px-4 py-2.5 text-sm inline-flex items-center justify-center"
-              >
-                <ChartBarIcon className="w-5 h-5 mr-2" />
-                Go to Dashboard
-              </button>
-            </div>
-          </div>
+          <></>
         )}
 
         {/* Features */}
@@ -235,157 +264,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* You.com Connectivity Test */}
-        <div className="card-sleek card-hover mb-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-stone-200 mb-1">
-                You.com API Test
-              </h3>
-              <p className="text-stone-200 text-sm mb-2">
-                Quick connectivity check for report generation.
-              </p>
-            </div>
-            <button
-              onClick={async () => {
-                setYouTestLoading(true);
-                setYouTestResult(null);
-                setYouTestError(null);
-                try {
-                  const res = await fetch("/api/youcom/test", {
-                    method: "GET",
-                  });
-                  const json = await res.json();
-                  if (!res.ok || json.ok === false) {
-                    throw new Error(json.error || `HTTP ${res.status}`);
-                  }
-                  setYouTestResult(json);
-                } catch (e) {
-                  setYouTestError(e.message || "Unknown error");
-                } finally {
-                  setYouTestLoading(false);
-                }
-              }}
-              className="btn-secondary-dark inline-flex items-center px-4 py-2 text-sm disabled:opacity-50"
-              disabled={youTestLoading}
-            >
-              {youTestLoading ? "Testing..." : "Run Test"}
-            </button>
-          </div>
-          {youTestError && (
-            <div className="mt-3 p-3 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
-              {youTestError}
-            </div>
-          )}
-          {youTestResult && (
-            <div className="mt-3 p-3 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 text-sm">
-              <div className="mb-1">
-                <span className="text-stone-400">Status:</span> OK
-              </div>
-              {typeof youTestResult.count !== "undefined" && (
-                <div className="mb-1">
-                  <span className="text-stone-400">Results count:</span>{" "}
-                  {youTestResult.count}
-                </div>
-              )}
-              {Array.isArray(youTestResult.keys) &&
-                youTestResult.keys.length > 0 && (
-                  <div className="mb-1">
-                    <span className="text-stone-400">Response keys:</span>{" "}
-                    {youTestResult.keys.join(", ")}
-                  </div>
-                )}
-              {typeof youTestResult.durationMs !== "undefined" && (
-                <div className="mb-1">
-                  <span className="text-stone-400">Duration:</span>{" "}
-                  {youTestResult.durationMs} ms
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* DeepInfra Connectivity Test */}
-        <div className="card-sleek card-hover mb-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-stone-200 mb-1">
-                DeepInfra API Test
-              </h3>
-              <p className="text-stone-200 text-sm mb-2">
-                Quick connectivity check for synthesis provider.
-              </p>
-            </div>
-            <button
-              onClick={async () => {
-                setDiTestLoading(true);
-                setDiTestResult(null);
-                setDiTestError(null);
-                try {
-                  const res = await fetch("/api/deepinfra", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      prompt: "Ping",
-                      systemPrompt:
-                        'You are a ping responder. Reply with JSON: {"pong":true}',
-                    }),
-                  });
-                  const json = await res.json();
-                  if (!res.ok) {
-                    throw new Error(json.error || `HTTP ${res.status}`);
-                  }
-                  setDiTestResult({
-                    ok: true,
-                    hasContent: !!json.content,
-                    model: json.model,
-                  });
-                } catch (e) {
-                  setDiTestError(e.message || "Unknown error");
-                } finally {
-                  setDiTestLoading(false);
-                }
-              }}
-              className="btn-secondary-dark inline-flex items-center px-4 py-2 text-sm disabled:opacity-50"
-              disabled={diTestLoading}
-            >
-              {diTestLoading ? "Testing..." : "Run Test"}
-            </button>
-          </div>
-          {diTestError && (
-            <div className="mt-3 p-3 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
-              {diTestError}
-            </div>
-          )}
-          {diTestResult && (
-            <div className="mt-3 p-3 bg-stone-800/50 border border-stone-700 rounded-lg text-stone-200 text-sm">
-              <div className="mb-1">
-                <span className="text-stone-400">Status:</span> OK
-              </div>
-              <div className="mb-1">
-                <span className="text-stone-400">Has content:</span>{" "}
-                {diTestResult.hasContent ? "yes" : "no"}
-              </div>
-              {diTestResult.model && (
-                <div className="mb-1">
-                  <span className="text-stone-400">Model:</span>{" "}
-                  {diTestResult.model}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Examples Link */}
-        <div className="text-center">
-          <button
-            onClick={() => router.push("/examples")}
-            className="btn-secondary-dark inline-flex items-center px-5 py-2.5 text-sm"
-          >
-            Explore Examples
-            <ArrowRightIcon className="w-4 h-4 ml-2" />
-          </button>
-        </div>
+        {/* API tests removed */}
       </div>
     </div>
   );

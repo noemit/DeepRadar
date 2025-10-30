@@ -103,7 +103,7 @@ export default function RunReportButton({
         ) : (
           <>
             <PlayIcon className="w-5 h-5 mr-2" />
-            {isReportFresh ? "Refresh Report" : "Generate Report"}
+            {latestReport ? "Re-generate Report" : "Generate Report"}
           </>
         )}
       </Button>

@@ -438,6 +438,7 @@ export async function POST(req, { params }) {
       });
 
       // Group results by query if available, or create a single section
+      console.log("search result:", result);
       const itemsByQuery = {};
       uniqueResults.forEach((result) => {
         const query = result.query || "General Results";

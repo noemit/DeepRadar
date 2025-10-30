@@ -8,12 +8,35 @@ import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
  * @param {Object} props.report - Report data
  * @param {Function} [props.onShare] - Callback when sharing an item
  */
-export default function ReportView({ report, onShare, onItemHover, onItemLeave }) {
+export default function ReportView({
+  report,
+  onShare,
+  onItemHover,
+  onItemLeave,
+}) {
   const [openDebugIndex, setOpenDebugIndex] = React.useState(null);
 
   // Support both v1 (sections) and v2 (items) formats
   const isV2Format = report?.version === "v2" && Array.isArray(report.items);
   const isV1Format = Array.isArray(report?.sections);
+
+  React.useEffect(() => {
+    if (!report) return;
+    console.log("ReportView report:", report);
+    if (isV2Format) {
+      console.log("ReportView items (v2):", report.items);
+    }
+    if (isV1Format) {
+      console.log(
+        "ReportView sections (v1):",
+        (report.sections || []).map((s) => ({
+          title: s.title,
+          count: (s.items || []).length,
+          items: s.items,
+        }))
+      );
+    }
+  }, [report, isV1Format, isV2Format]);
 
   if (!report || (!isV1Format && !isV2Format)) {
     return (
@@ -45,14 +68,14 @@ export default function ReportView({ report, onShare, onItemHover, onItemLeave }
         </div>
 
         {/* Summary */}
-        {report.summary && (
+        {/* {report.summary && (
           <div className="mb-5 p-compact bg-gradient-to-r from-cyan-900/20 to-blue-900/20 rounded-lg border border-cyan-500/30">
             <h3 className="text-base font-semibold text-stone-200 mb-1.5">
               TL;DR
             </h3>
             <p className="text-stone-200 text-sm">{report.summary}</p>
           </div>
-        )}
+        )} */}
 
         {/* V2 Format: Simple bullet point list */}
         {isV2Format && (
@@ -62,6 +85,7 @@ export default function ReportView({ report, onShare, onItemHover, onItemLeave }
             </h3>
             <ul className="space-y-3 list-none">
               {report.items.map((item, itemIdx) => {
+                console.log("ReportView item (v2):", item);
                 const ts = item.date ? new Date(item.date).getTime() : 0;
                 const isValidTs = !isNaN(ts) && ts > 0;
                 const isFresh =
@@ -79,8 +103,35 @@ export default function ReportView({ report, onShare, onItemHover, onItemLeave }
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
+                        {(item?.image?.thumbnail ||
+                          item?.thumbnail ||
+                          item?.image) && (
+                          <img
+                            src={
+                              item?.image?.thumbnail ||
+                              item?.thumbnail ||
+                              item?.image
+                            }
+                            alt={item.title}
+                            className="w-16 h-16 object-cover rounded border border-gray-700/50 mb-2"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                        )}
                         <h4 className="text-base font-semibold text-stone-200 mb-1">
-                          {item.title}
+                          {item.url ? (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline text-accent-blue hover:text-accent-cyan"
+                            >
+                              {item.title}
+                            </a>
+                          ) : (
+                            item.title
+                          )}
                         </h4>
                         <div className="flex items-center gap-2 mb-2">
                           {item.source && (
@@ -144,69 +195,91 @@ export default function ReportView({ report, onShare, onItemHover, onItemLeave }
                 {section.title}
               </h3>
               <div className="space-y-3">
-                {section.items?.map((item, itemIdx) => (
-                  <div
-                    key={itemIdx}
-                    className="border border-gray-700/50 bg-gray-800/30 rounded-lg p-compact hover:border-gray-600/60 transition-all"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-start gap-3 mb-2">
-                          {item.image && (
-                            <img
-                              src={item.image}
-                              alt={item.headline}
-                              className="w-16 h-16 object-cover rounded border border-gray-700/50"
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                              }}
-                            />
-                          )}
+                {section.items?.map(
+                  (item, itemIdx) => (
+                    console.log("ReportView item (v1):", item),
+                    (
+                      <div
+                        key={itemIdx}
+                        className="border border-gray-700/50 bg-gray-800/30 rounded-lg p-compact hover:border-gray-600/60 transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
-                            <h4 className="text-base font-semibold text-stone-200 mb-1">
-                              {item.headline}
-                            </h4>
-                            <p className="text-xs text-stone-200 mb-1.5">
+                            <div className="flex items-start gap-3 mb-2">
+                              {(item?.image?.thumbnail ||
+                                item?.thumbnail ||
+                                item?.image) && (
+                                <img
+                                  src={
+                                    item?.image?.thumbnail ||
+                                    item?.thumbnail ||
+                                    item?.image
+                                  }
+                                  alt={item.headline}
+                                  className="w-16 h-16 object-cover rounded border float-left padding-right-2 border-gray-700/50"
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                  }}
+                                />
+                              )}
+                              <div className="flex-1">
+                                <h4 className="text-base font-semibold text-stone-200 mb-1">
+                                  {item.url ? (
+                                    <a
+                                      href={item.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="hover:underline text-accent-blue hover:text-accent-cyan"
+                                    >
+                                      {item.headline}
+                                    </a>
+                                  ) : (
+                                    item.headline
+                                  )}
+                                </h4>
+                                {/* <p className="text-xs text-stone-200 mb-1.5">
                               {item.source}
-                            </p>
-                            <p className="text-sm text-stone-200 mb-2">
-                              {item.snippet}
-                            </p>
-                            {item.tags && item.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mb-2">
-                                {item.tags.map((tag, tagIdx) => (
-                                  <span
-                                    key={tagIdx}
-                                    className="px-2 py-0.5 bg-gray-700/50 text-stone-200 text-xs rounded-full border border-gray-600/50"
+                            </p> */}
+                                <p className="text-sm text-stone-200 mb-2">
+                                  {item.snippet}
+                                </p>
+                                {item.tags && item.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {item.tags.map((tag, tagIdx) => (
+                                      <span
+                                        key={tagIdx}
+                                        className="px-2 py-0.5 bg-gray-700/50 text-stone-200 text-xs rounded-full border border-gray-600/50"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.url && (
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center text-accent-blue hover:text-accent-cyan text-sm transition-colors"
                                   >
-                                    {tag}
-                                  </span>
-                                ))}
+                                    Read more
+                                    <ArrowTopRightOnSquareIcon className="w-4 h-4 ml-1" />
+                                  </a>
+                                )}
                               </div>
-                            )}
-                            {item.url && (
-                              <a
-                                href={item.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-accent-blue hover:text-accent-cyan text-sm transition-colors"
-                              >
-                                Read more
-                                <ArrowTopRightOnSquareIcon className="w-4 h-4 ml-1" />
-                              </a>
-                            )}
+                            </div>
                           </div>
+                          <button
+                            onClick={() => handleCopyLink(item.url)}
+                            className="px-3 py-1.5 text-xs font-medium text-accent-blue hover:text-accent-cyan border border-accent-blue/30 rounded-lg hover:bg-accent-blue/10 transition-all whitespace-nowrap"
+                          >
+                            Copy link
+                          </button>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleCopyLink(item.url)}
-                        className="px-3 py-1.5 text-xs font-medium text-accent-blue hover:text-accent-cyan border border-accent-blue/30 rounded-lg hover:bg-accent-blue/10 transition-all whitespace-nowrap"
-                      >
-                        Copy link
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                    )
+                  )
+                )}
               </div>
             </div>
           ))}
@@ -218,10 +291,11 @@ export default function ReportView({ report, onShare, onItemHover, onItemLeave }
             <p className="text-xs text-stone-200">
               {isV2Format ? (
                 <>
+                  Top results after filtering{" "}
                   <strong className="text-stone-200">
                     {report.resultCount || 0}
                   </strong>{" "}
-                  results from{" "}
+                  pages from{" "}
                   <strong className="text-stone-200">
                     {report.queryCount || 0}
                   </strong>{" "}

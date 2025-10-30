@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../../contexts/AuthContext";
 import RadarCanvas from "../../../../components/radar/RadarCanvas";
@@ -11,7 +12,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default function RadarView({ params: routeParams }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, signout } = useAuth();
   const radarId = routeParams?.radarId;
   const [radar, setRadar] = useState(null);
   const [radarLoading, setRadarLoading] = useState(true);
@@ -170,10 +171,13 @@ export default function RadarView({ params: routeParams }) {
         <div className="text-center">
           <p className="text-red-600 mb-4">{radarError || "Radar not found"}</p>
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={async () => {
+              await signout();
+              router.replace("/");
+            }}
             className="text-green-300 hover:text-green-400 transition-colors"
           >
-            Back to Dashboard
+            Sign out
           </button>
         </div>
       </div>
@@ -185,13 +189,24 @@ export default function RadarView({ params: routeParams }) {
       <div className="max-w-7xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="text-green-300 hover:text-green-400 mb-4 inline-flex items-center transition-colors"
-          >
-            <ArrowLeftIcon className="w-4 h-4 mr-1" />
-            Back to Dashboard
-          </button>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={async () => {
+                await signout();
+                router.replace("/");
+              }}
+              className="text-green-300 hover:text-green-400 inline-flex items-center transition-colors"
+            >
+              <ArrowLeftIcon className="w-4 h-4 mr-1" />
+              Sign out
+            </button>
+            <button
+              onClick={() => router.push("/radar/create")}
+              className="btn-gradient inline-flex items-center px-4 py-2 text-sm"
+            >
+              Start over
+            </button>
+          </div>
           <h1 className="text-4xl font-bold text-stone-100 mb-2">
             {radar.title || "Untitled Radar"}
           </h1>
@@ -214,9 +229,7 @@ export default function RadarView({ params: routeParams }) {
         <div className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Left: Radar + Plan */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-900">Radar</h2>
-            </div>
+            <div className="flex items-center justify-between mb-4"></div>
             {radar.mermaidDiagram && (
               <div className="mb-6">
                 {diffMermaid && (
@@ -244,14 +257,7 @@ export default function RadarView({ params: routeParams }) {
 
           {/* Right: Report */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-gray-900">Report</h2>
-              <RunReportButton
-                radarId={radarId}
-                latestReport={currentReport}
-                onReportGenerated={handleReportGenerated}
-              />
-            </div>
+            <div className="flex items-center justify-between mb-4"></div>
             {currentReport ? (
               <ReportView
                 report={{ ...currentReport, radarId }}
@@ -267,7 +273,20 @@ export default function RadarView({ params: routeParams }) {
                 </p>
               </div>
             )}
+            <RunReportButton
+              radarId={radarId}
+              latestReport={currentReport}
+              onReportGenerated={handleReportGenerated}
+            />
           </div>
+        </div>
+        <div className="mt-4 text-right">
+          <Link
+            href="/company-overview"
+            className="text-[11px] text-stone-400 hover:text-stone-300"
+          >
+            Full company view
+          </Link>
         </div>
       </div>
     </div>

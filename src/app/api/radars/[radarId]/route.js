@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
 import { getDocument, updateDocument } from "../../../../lib/firebaseAdmin";
-import { getRadarGenerationSystemPrompt } from "../../../../lib/prompts/radarGeneration";
+import {
+  getRadarGenerationSystemPrompt,
+  buildRadarGenerationUserPrompt,
+} from "../../../../lib/prompts/radarGeneration";
 import {
   initRequestLogger,
   attachRequestIdHeader,
@@ -85,27 +88,10 @@ export async function PATCH(req, { params }) {
     const currentRadar = radarResult.data;
     const currentProfile = profile || currentRadar.profile;
 
-    // Build refinement prompt - instruct LLM to update minimally
-    const systemPrompt = `You are updating a user's DeepRadar based on their refinement request.
-
-Current profile:
-${JSON.stringify(currentProfile, null, 2)}
-
-Current query plan:
-${JSON.stringify(currentRadar.queryPlan, null, 2)}
-
-User's refinement request: "${refinementMessage}"
-
-Update the radar MINIMALLY - only change what the user specifically mentioned.
-Return:
-1. Updated Mermaid quadrantChart (change only the elements mentioned by the user)
-2. Updated query plan XML (update only relevant queries)
-
-Output in two code blocks: \`\`\`mermaid then \`\`\`xml`;
-
-    const userPrompt = `Please update the radar based on this request: "${refinementMessage}"
-
-Only modify what is mentioned. Keep everything else the same.`;
+    // Build refinement prompt - reuse original generation prompt, append refinement notes at the end
+    const systemPrompt = getRadarGenerationSystemPrompt();
+    const baseUser = buildRadarGenerationUserPrompt(currentProfile);
+    const userPrompt = `${baseUser}\n\nRefinement notes: ${refinementMessage}`;
 
     // Derive origin from the incoming request to avoid hardcoded ports in dev
     const origin =
@@ -157,20 +143,7 @@ Only modify what is mentioned. Keep everything else the same.`;
 
     await updateDocument("radars", radarId, updateData);
 
-    // Immediately regenerate report after refinement
-    try {
-      const runRes = await fetch(`${origin}/api/radars/${radarId}/run/v2`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!runRes.ok) {
-        const err = await runRes.json();
-        throw new Error(err?.error || "Failed to regenerate report");
-      }
-    } catch (e) {
-      // Non-fatal: keep refinement successful even if report generation fails
-      logger.warn("report.autorun.error", { error: e?.message, radarId });
-    }
+    // Skipping automatic report regeneration (v2 trigger) after refinement
 
     logger.info("request.success", { radarId, ...end(200) });
     return attachRequestIdHeader(
