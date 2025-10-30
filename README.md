@@ -1,6 +1,6 @@
 ## DeepRadar
 
-DeepRadar is an AI-enabled industry monitoring system — think modern, enterprise-grade Google Alerts. It continuously scans sources, filters noise, synthesizes what matters, and delivers concise, shareable updates that keep the entire organization in the loop.
+DeepRadar is an AI-enabled industry monitoring system — think modern, enterprise-grade Google Alerts. It continuously scans sources, filters noise, synthesizes what matters, and delivers concise, shareable updates that keep the entire organization in the loop. You can try it at https://deep-radar.vercel.app/
 
 ### What it does
 
