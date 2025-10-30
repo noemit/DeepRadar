@@ -1,0 +1,31 @@
+{
+  "name": "ai-boilerplate",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.7",
+    "@heroicons/react": "^2.2.0",
+    "axios": "^1.6.7",
+    "firebase": "^10.7.1",
+    "firebase-admin": "^13.4.0",
+    "mermaid": "^11.12.1",
+    "next": "^14.2.11",
+    "fast-xml-parser": "^4.5.0",
+    "pdf-parse": "^1.1.1",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.1",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6"
+  }
+}

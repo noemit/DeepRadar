@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    @apply antialiased bg-gray-900 text-stone-200;
+    color: #ffffff;
+    background-image: 
+      linear-gradient(135deg, rgba(26, 26, 31, 0.95) 0%, rgba(15, 15, 19, 1) 100%),
+      radial-gradient(circle at 20% 50%, rgba(74, 144, 226, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Texture overlay support - add texture files to public/ */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.03;
+    background-image: url(/texture-overlay.png);
+    background-size: cover;
+    background-repeat: repeat;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ensure content is above texture */
+  #__next,
+  main {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Custom component styles */
+@layer components {
+  /* Sleek card with gradient and reduced padding */
+  .card-sleek {
+    @apply bg-gradient-card backdrop-blur-sm border border-gray-700/50 rounded-xl shadow-2xl;
+    padding: 1rem 1.25rem;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .card-hover {
+    @apply transition-all duration-200;
+    @apply hover:border-gray-600/60 hover:shadow-[0_8px_12px_-2px_rgba(0,0,0,0.4),0_4px_6px_-1px_rgba(0,0,0,0.3)];
+  }
+
+  /* Gradient buttons */
+  .btn-gradient {
+    @apply bg-gradient-accent text-black font-medium rounded-lg transition-all duration-200;
+    @apply hover:opacity-90 hover:shadow-lg hover:shadow-blue-500/30;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 focus:ring-offset-gray-900;
+    box-shadow: 0 4px 6px -1px rgba(74, 144, 226, 0.3), 0 2px 4px -1px rgba(74, 144, 226, 0.2);
+  }
+
+  .btn-secondary-dark {
+    @apply border border-gray-600/50 bg-[#86efac] text-gray-900 font-medium rounded-lg transition-all duration-200;
+    @apply hover:bg-[#b0f5c9] hover:border-gray-500/50;
+    @apply focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:ring-offset-2 focus:ring-offset-gray-900;
+  }
+
+  /* Reduced padding utilities */
+  .p-compact {
+    padding: 0.75rem 1rem;
+  }
+
+  .px-compact {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  .py-compact {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+  }
+
+  .text-gradient-accent {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  }
+}
+
+/* Custom utility styles */
+@layer utilities {
+  /* Sleek scrollbar */
+  .scrollbar-sleek::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-sleek::-webkit-scrollbar-track {
+    @apply bg-gray-800/50 rounded-full;
+  }
+
+  .scrollbar-sleek::-webkit-scrollbar-thumb {
+    @apply bg-gray-600/50 rounded-full;
+    @apply hover:bg-gray-500/50;
+  }
+
+  /* Texture utility classes */
+  .texture-overlay {
+    position: relative;
+  }
+
+  .texture-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.03;
+    background-image: url(/texture-overlay.png);
+    background-size: cover;
+    background-repeat: repeat;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+} 

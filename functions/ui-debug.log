@@ -1,0 +1,15 @@
+/Users/macbook/.cache/firebase/emulators/ui-v1.5.0/server.bundle.js:1
+r t=n;if(a&&"object"==typeof a)for(var i,r=Object.keys(a).sort(),s=0;s<r.length;s++){if(i=r[s],!o.test(i))throw new TypeError("invalid parameter name");t+="; "+i+"="+p(a[i])}return t},a.parse=function(e){if(!e)throw new TypeError("argument string is required");var a="object"==typeof e?function(e){var a;"function"==typeof e.getHeader?a=e.getHeader("content-type"):"object"==typeof e.headers&&(a=e.headers&&e.headers["content-type"]);if("string"!=typeof a)throw new TypeError("content-type header is missing from object");return a}(e):e;if("string"!=typeof a)throw new TypeError("argument string is required to be a string");var n=a.indexOf(";"),i=-1!==n?a.substr(0,n).trim():a.trim();if(!c.test(i))throw new TypeError("invalid media type");var o=new l(i.toLowerCase());if(-1!==n){var s,p,u;for(t.lastIndex=n;p=t.exec(a);){if(p.index!==n)throw new TypeError("invalid parameter format");n+=p[0].length,s=p[1].toLowerCase(),'"'===(u=p[2])[0]&&(u=u.substr(1,u.length-2).replace(r,"$1")),o.parameters[s]=u}if(n!==a.length)throw new TypeError("invalid parameter format")}return o}},function(e,a,n){"use strict";e.exports=Object.setPrototypeOf||({__proto__:[]}instanceof Array?function(e,a){return e.__proto__=a,e}:function(e,a){for(var n in a)e.hasOwnProperty(n)||(e[n]=a[n]);return e})},function(e,a,n){"use strict";
+  ^
+
+SyntaxError: Unexpected identifier
+    at internalCompileFunction (node:internal/vm:73:18)
+    at wrapSafe (node:internal/modules/cjs/loader:1178:20)
+    at Module._compile (node:internal/modules/cjs/loader:1220:27)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1310:10)
+    at Module.load (node:internal/modules/cjs/loader:1119:32)
+    at Module._load (node:internal/modules/cjs/loader:960:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:81:12)
+    at node:internal/main/run_main_module:23:47
+
+Node.js v18.17.1
