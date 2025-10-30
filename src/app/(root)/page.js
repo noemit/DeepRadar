@@ -18,6 +18,7 @@ export default function Home() {
     signinWithGoogle,
     error: authError,
     clearError,
+    signout,
   } = useAuth();
   const router = useRouter();
   const [signInLoading, setSignInLoading] = useState(false);
@@ -96,18 +97,7 @@ export default function Home() {
     !!user && !authLoading
   );
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      if (!newestLoading) {
-        const newest = newestRadars && newestRadars[0];
-        if (newest && newest.id) {
-          router.replace(`/radar/${newest.id}`);
-        } else {
-          router.replace("/radar/create");
-        }
-      }
-    }
-  }, [authLoading, newestLoading, newestRadars, router, user]);
+  // No redirect on home; show navigation buttons instead
 
   if (authLoading || (user && newestLoading)) {
     return (
@@ -147,7 +137,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* CTA Section */}
+        {/* CTA Section for signed-out users */}
         {!user ? (
           <div className="card-sleek card-hover mb-6">
             <h2 className="text-xl font-semibold text-stone-200 mb-3 text-center">
@@ -230,8 +220,46 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        ) : (
-          <></>
+        ) : null}
+
+        {/* Navigation for signed-in users */}
+        {user && (
+          <div className="card-sleek card-hover mb-6">
+            <h2 className="text-xl font-semibold text-stone-200 mb-3 text-center">
+              Your navigation
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {newestRadars && newestRadars[0]?.id && (
+                <Link
+                  href={`/radar/${newestRadars[0].id}`}
+                  className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm rounded-lg border border-stone-700/70 bg-stone-900/30 text-stone-200 hover:bg-stone-900/50 transition-colors"
+                >
+                  Your radar
+                </Link>
+              )}
+              <Link
+                href="/radar/create"
+                className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm rounded-lg border border-stone-700/70 bg-stone-900/30 text-stone-200 hover:bg-stone-900/50 transition-colors"
+              >
+                Create
+              </Link>
+              <Link
+                href="/company-overview"
+                className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm rounded-lg border border-stone-700/70 bg-stone-900/30 text-stone-200 hover:bg-stone-900/50 transition-colors"
+              >
+                Company overview
+              </Link>
+              <button
+                onClick={async () => {
+                  await signout();
+                  router.refresh();
+                }}
+                className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm rounded-lg border border-stone-700/70 bg-stone-900/30 text-stone-200 hover:bg-stone-900/50 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Features */}

@@ -105,11 +105,11 @@ export default function CreateRadar() {
       <div className="max-w-3xl mx-auto py-8 px-4">
         <div className="card-sleek card-hover p-8">
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.back()}
             className="text-green-300 hover:text-green-400 mb-4 inline-flex items-center transition-colors"
+            aria-label="Go back"
           >
-            <ArrowLeftIcon className="w-4 h-4 mr-1" />
-            Back to Dashboard
+            <ArrowLeftIcon className="w-4 h-4" />
           </button>
           <h1 className="text-3xl font-bold text-stone-200 mb-2">
             Create Your Radar
